@@ -1,0 +1,139 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    user: '1000'
+    volumes:
+      - ./zk-data:/var/lib/zookeeper/data
+      - ./zk-txn-logs:/var/lib/zookeeper/log
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"  # Expose Kafka's default port
+      - "19092:19092"  # Expose the additional listener port
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://kafka:19092
+    volumes:
+      - ./kafka-data:/var/lib/kafka/data
+    networks:
+      - kafka-network
+
+  rest-proxy:
+    image: confluentinc/cp-kafka-rest:7.4.0
+    depends_on:
+      - kafka
+    ports:
+      - "8082:8082"
+    environment:
+      - KAFKA_REST_BOOTSTRAP_SERVERS=kafka:9092
+    networks:
+      - kafka-network
+
+networks:
+  kafka-network:
+
+  # schema-registry:
+  #   image: confluentinc/cp-schema-registry:7.4.0
+  #   depends_on:
+  #     - zookeeper
+  #     - kafka
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=zookeeper:2181
+  #     - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+  #   networks:
+  #     - kafka-network
+
+# docker exec -it kafka-kafka-1 kafka-topics --create --topic T_PRIVATE_NUXEO_EVENT_LOOK --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+# docker exec -it kafka-kafka-1 kafka-topics --list --bootstrap-server localhost:9092
+# docker exec -it kafka-kafka-1 kafka-console-consumer --topic T_PRIVATE_NUXEO_EVENT_LOOK --bootstrap-server localhost:9092 --from-beginning
+
+  # kafka-connect:
+  #   image: confluentinc/cp-kafka-connect:latest
+  #   depends_on:
+  #     - kafka
+  #   ports:
+  #     - "8083:8083"
+  #   environment:
+  #     - CONNECT_BOOTSTRAP_SERVERS=kafka:9092
+  #     - CONNECT_REST_PORT=8083
+  #     - CONNECT_GROUP_ID=kafka-connect-group
+  #     - CONNECT_CONFIG_STORAGE_TOPIC=kafka-connect-configs
+  #     - CONNECT_OFFSET_STORAGE_TOPIC=kafka-connect-offsets
+  #     - CONNECT_STATUS_STORAGE_TOPIC=kafka-connect-status
+  #   networks:
+  #     - kafka-network
+
+  # control-center:
+  #   image: confluentinc/cp-enterprise-control-center:latest
+  #   depends_on:
+  #     - kafka
+  #     - kafka-connect
+  #   ports:
+  #     - "9021:9021"
+  #   environment:
+  #     - CONTROL_CENTER_BOOTSTRAP_SERVERS=kafka:9092
+  #     - CONTROL_CENTER_CONNECT_CLUSTER=kafka-connect:8083
+  #   networks:
+  #     - kafka-network
+
+  # ksql-server:
+  #   image: confluentinc/cp-ksql-server:latest
+  #   depends_on:
+  #     - kafka
+  #     - control-center
+  #   ports:
+  #     - "8088:8088"
+  #   environment:
+  #     - KSQL_BOOTSTRAP_SERVERS=kafka:9092
+  #     - KSQL_LISTENERS=http://0.0.0.0:8088
+  #   networks:
+  #     - kafka-network
+
+  # schema-registry:
+  #   image: confluentinc/cp-schema-registry:latest
+  #   depends_on:
+  #     - kafka
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka:9092
+  #     - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8081
+  #   networks:
+  #     - kafka-network
+
+  # couchbase-kafka-connector:
+  #   image: couchbaseinc/couchbase-kafka-connector:latest
+  #   depends_on:
+  #     - kafka
+  #   environment:
+  #     - CONNECT_BOOTSTRAP_SERVERS=kafka:9092
+  #     - CONNECT_GROUP_ID=couchbase-connector-group
+  #     - CONNECT_KEY_CONVERTER=org.apache.kafka.connect.storage.StringConverter
+  #     - CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+  #     - CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false
+  #     - COUCHBASE_USERNAME=admin
+  #     - COUCHBASE_PASSWORD=password
+  #     - COUCHBASE_HOST=couchbase
+  #     - COUCHBASE_BUCKET=mybucket
+  #     - COUCHBASE_COLLECTION=mycollection
+  #   networks:
+  #     - kafka-network
+
+# networks:
+#   kafka-network:
+
+

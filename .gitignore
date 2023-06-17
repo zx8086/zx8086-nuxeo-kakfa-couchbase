@@ -1,0 +1,5 @@
+node_modules
+docker.txt
+kafka-kraft-data 
+schema-registry-data 
+kafka-rest-data

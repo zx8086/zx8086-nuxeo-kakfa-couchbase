@@ -1,0 +1,20 @@
+{
+  "type": "record",
+  "name": "NuxeoLookChangeEvent",
+  "fields": [
+    {"name": "Status", "type": {"type": "enum", "name": "StatusEnum", "symbols": ["Created", "Updated", "Deleted"]}},
+    {"name": "Nuxeo_ID", "type": "string"},
+    {"name": "Modified", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "DivisionName", "type": "string"},
+    {"name": "SeasonName", "type": "string"},
+    {"name": "Position", "type": "int"},
+    {"name": "Title", "type": ["null", "string"]},
+    {"name": "MarketLaunchContentTyp", "type": "int"},
+    {"name": "RelatedStyles", "type": ["null", {"type": "array", "items": "string"}]},
+    {"name": "Created", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "Scene7", "type": "string"},
+    {"name": "Brand", "type": "string"},
+    {"name": "FreeTag", "type": ["null", "string"]},
+    {"name": "Asset Type", "type": ["null", "string"]}
+  ]
+}
