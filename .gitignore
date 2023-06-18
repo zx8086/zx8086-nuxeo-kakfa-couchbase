@@ -3,3 +3,5 @@ docker.txt
 kafka-kraft-data 
 schema-registry-data 
 kafka-rest-data
+kafka-connect-data
+ksql-server-data

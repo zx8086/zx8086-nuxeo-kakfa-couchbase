@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { v4: uuidv4 } = require('uuid');
 
 const REST_PROXY = "http://localhost:8082/topics";
 
@@ -10,7 +11,7 @@ const http = axios.create({
 
 const productImageTopicUrl = "/gdam-products-linebook";
 // const lookTopicUrl = "/T_PRIVATE_NUXEO_EVENT_LOOK";
-const lookTopicUrl = "/T_PRIVATE_NUXEO_EVENT_LOOK_AVRO";
+const lookTopicUrl = "/T_PRIVATE_NUXEO_EVENT_LOOK_TEST_AVRO";
 const nullableFieldNames = [
   "DeliveryBatch",
   "Description",
@@ -48,14 +49,26 @@ exports.handler = async (event) => {
     }
 
     const parsedEvent = JSON.parse(eventBody); // Parse the event JSON string
+    const schemaId = 1; // Replace with the actual schema ID or subject name from the Schema Registry
+
+    // const kafkaRequestBody = {
+    //   records: [
+    //     {
+    //       value: parsedEvent,
+    //     },
+    //   ],
+    // };
 
     const kafkaRequestBody = {
       records: [
         {
-          value: parsedEvent,
+          value: JSON.parse(eventBody),
         },
       ],
+      // key_schema_id: schemaId, // Include the schema ID or subject name
+      value_schema_id: "1", // Include the schema ID or subject name
     };
+
     processNullableFields(kafkaRequestBody);
 
     console.info("kafkaRequestBody", JSON.stringify(kafkaRequestBody));
@@ -117,7 +130,7 @@ const currentTimestamp = Math.floor(Date.now() / 1000);
 // Generate the Nuxeo event for a PVH Look
 const event = {
   "Status": "Updated",
-  "Nuxeo_ID": "956d897f-1e0d-49b4-b71e-53fc5221b955",
+  "Nuxeo_ID": uuidv4(),
   "Modified": currentTimestamp,
   "DivisionName": "62",
   "SeasonName": "C41",
